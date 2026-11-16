@@ -20,6 +20,21 @@ cd deck && palace -np 4 config.json
   - terminal *i* is the group with tag *i* in `mesh.json`
 - **In IIC-OSIC-TOOLS:** Palace is in `/foss/tools/bin`. As root, `mpirun` refuses to start, so use `palace -serial config.json`.
 
+## Ground openings and electrical identity
+
+Ground openings, retained ground islands and their coatings follow the selected
+`PEX25D` scene. The reference net identifies the terminal independently of the
+ground profile name. Floating bodies remain separate even when their names match
+connected nets; an optional `body_names.json` records disambiguated solver labels.
+
+These features require a Gmsh backend that explicitly supports both ground cutouts
+and electrical identity. An older or incomplete backend is rejected before files
+are written.
+
+Scenes requiring capacitance accounting are rejected before output. Ground
+openings and electrical ownership alone do not implement exclusion masks, charge
+groups or filtered capacitance results.
+
 ## Options
 
 The mesh options of klayout-pex-plugin-gmsh, plus:
@@ -31,12 +46,17 @@ The mesh options of klayout-pex-plugin-gmsh, plus:
 | `linear_tol` | 1e-8 | Relative residual of the linear solver |
 | `linear_max_iterations` | 200 | |
 
-Pass them with `pex25d export --option NAME=VALUE` (klayout-pex 0.6.3 or later) or `options={...}` in Python.
+Pass them with `pex25d export --option NAME=VALUE` or `options={...}` in Python.
+
+## Requirements
+
+- `klayout-pex>=0.10.0,<1` (plugin API `v1` is provisional)
+- `klayout-pex-plugin-gmsh>=0.2.0,<0.3`
 
 ## Development
 
 ```bash
-poetry install    # uses ../klayout-pex-plugin-gmsh until it is on PyPI
+poetry install
 poetry run pytest # runs Palace too, if it is on PATH
 ```
 
