@@ -46,7 +46,7 @@ defaults:
 
 jobs:
   test:
-    name: Test ${{ matrix.os }}-py${{ matrix.python-version }}
+    name: ${{ matrix.os }}-py${{ matrix.python-version }}
     runs-on: ${{ matrix.os }}
 
     strategy:
@@ -60,17 +60,16 @@ jobs:
         shell: bash
         working-directory: klayout-pex-plugin-palace
 
+    env:
+      KPEX_KLAYOUT_EXE: /nonexistent
+      PYTHONWARNDEFAULTENCODING: '1'
+      OMP_NUM_THREADS: '2'
+      OPENBLAS_NUM_THREADS: '2'
+
     steps:
     - uses: actions/checkout@v7
       with:
         path: klayout-pex-plugin-palace
-
-    # Until klayout-pex-plugin-gmsh is on PyPI, pyproject.toml takes it from the
-    # checkout next to this one
-    - uses: actions/checkout@v7
-      with:
-        repository: iic-jku/klayout-pex-plugin-gmsh
-        path: klayout-pex-plugin-gmsh
 
     - name: "[🐍] Setup python ${{ matrix.python-version }}"
       uses: actions/setup-python@v7
@@ -99,10 +98,12 @@ jobs:
         sudo apt-get update
         sudo apt-get install --yes libgl1 libglu1-mesa libgomp1 libxcursor1 libxft2 libxinerama1 libxrender1
 
-    - name: "[🐍] Install"
-      run: poetry install --no-interaction
+    - name: Install published release dependencies
+      run: |
+        poetry check --lock
+        poetry install --no-interaction
 
-    - name: "[🐍] Run tests"
+    - name: Run release dependency tests
       run: poetry run pytest --color no -rA
 
   build:
